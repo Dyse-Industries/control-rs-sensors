@@ -1,0 +1,66 @@
+# control-rs-ci gate configuration for control-rs-sensors.
+# Runner: control-rs-ci from control-rs at the rev pinned in Cargo.toml.
+
+[runner]
+title = "control-rs-sensors"
+out_dir = "target/ci-artifacts"
+timeout_secs = 90
+diff-trigger = [".cargo/gate.toml", ".cargo/config.toml", ".github/workflows/", "Cargo.toml", "Cargo.lock"]
+
+[execution.exclusive]
+pre = ["fetch"]
+post = []
+
+[execution.groups]
+build_test = ["build", "no-std", "test"]
+lint = ["fmt", "clippy", "doc"]
+
+[fetch]
+mode = "fail"
+command = "cargo fetch"
+args = ["--locked"]
+timeout_secs = 600
+description = "Downloads dependencies into the Cargo cache before the groups start; fails if Cargo.lock is missing or out of date"
+
+[build]
+mode = "fail"
+command = "cargo build"
+args = ["--all-targets", "--locked"]
+timeout_secs = 1200
+description = "Compiles all targets with the std feature"
+
+[no-std]
+mode = "fail"
+command = "cargo check"
+args = ["--lib", "--no-default-features", "--locked"]
+timeout_secs = 600
+description = "Checks the library without the std feature"
+
+[test]
+mode = "fail"
+command = "cargo test"
+args = ["--locked"]
+timeout_secs = 1200
+description = "Executes host unit and integration tests"
+
+[fmt]
+mode = "fail"
+command = "cargo fmt"
+args = ["--all", "--", "--check"]
+timeout_secs = 120
+description = "Verifies formatting with rustfmt"
+
+[clippy]
+mode = "fail"
+command = "cargo clippy"
+args = ["--all-targets", "--locked", "--", "-D", "warnings"]
+timeout_secs = 900
+description = "Executes Clippy with warnings denied"
+
+[doc]
+mode = "fail"
+command = "cargo doc"
+args = ["--no-deps", "--locked"]
+env = { RUSTDOCFLAGS = "-D warnings" }
+timeout_secs = 900
+description = "Builds API documentation with rustdoc warnings denied"

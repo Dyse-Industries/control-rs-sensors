@@ -1,0 +1,179 @@
+{
+  "slug": "model-core",
+  "idea": "Model core: timeless sensor model contract, truth inputs, deterministic seeded random sources, noise discretization and composition of error terms, no_std",
+  "date": "2026-10-30",
+  "prior_research_files": [
+    "sensor-model-pipeline.json",
+    "measurement-timing.json"
+  ],
+  "queries": [
+    {
+      "query": "Counter-based random number generators: stateless streams keyed per sensor",
+      "method": "web: Salmon et al., SC11 (Utah course mirror)",
+      "status": "resolved"
+    },
+    {
+      "query": "Fast Gaussian sampling suitable for no_std (ziggurat versus Box-Muller)",
+      "method": "web: Voss ziggurat page (secondary), citing Marsaglia and Tsang 2000",
+      "status": "resolved"
+    },
+    {
+      "query": "Composition of sensor error terms and seed-based reproducibility in a simulation sensor model",
+      "method": "web: Gallo 2021, arXiv:2102.06492",
+      "status": "resolved"
+    },
+    {
+      "query": "Float functions available to a no_std crate depending only on control-rs",
+      "method": "control-rs Cargo.toml metadata (libm dependency)",
+      "status": "resolved"
+    },
+    {
+      "query": "Discrete first-order Gauss-Markov bias process and its parameters",
+      "method": "not resolved: Gallo models bias as bounded random walk; no Gauss-Markov source retrieved",
+      "status": "open"
+    },
+    {
+      "query": "Primary text of Marsaglia and Tsang 2000",
+      "method": "only a secondary citation retrieved",
+      "status": "open"
+    }
+  ],
+  "evidence": [
+    {
+      "quote": "The nth random number is obtained directly by some function, b, applied to n.",
+      "source_type": "primary",
+      "location": "Introduction",
+      "tags": [
+        "prng",
+        "counter-based"
+      ],
+      "bib_key": "salmon2011_random123"
+    },
+    {
+      "quote": "require little or no memory for state.",
+      "source_type": "primary",
+      "location": "Abstract",
+      "tags": [
+        "prng",
+        "no-std",
+        "state"
+      ],
+      "bib_key": "salmon2011_random123"
+    },
+    {
+      "quote": "All our PRNGs pass rigorous statistical tests (including TestU01's BigCrush).",
+      "source_type": "primary",
+      "location": "Abstract",
+      "tags": [
+        "prng",
+        "quality"
+      ],
+      "bib_key": "salmon2011_random123"
+    },
+    {
+      "quote": "A counter-based PRNG constructed from a keyed bijection can be easily parallelized",
+      "source_type": "primary",
+      "location": "Section 2",
+      "tags": [
+        "prng",
+        "streams",
+        "keys"
+      ],
+      "bib_key": "salmon2011_random123"
+    },
+    {
+      "quote": "For the default generator `mt19937` the speed up factor is 3.9.",
+      "source_type": "secondary",
+      "location": "Results",
+      "tags": [
+        "gaussian",
+        "ziggurat",
+        "box-muller"
+      ],
+      "bib_key": "voss_ziggurat"
+    },
+    {
+      "quote": "I use only 128 steps instead of 256 to decrease the amount of required tabulated data.",
+      "source_type": "secondary",
+      "location": "Implementation",
+      "tags": [
+        "gaussian",
+        "ziggurat",
+        "table"
+      ],
+      "bib_key": "voss_ziggurat"
+    },
+    {
+      "quote": "the results of a given run can always be repeated by employing the same seeds.",
+      "source_type": "primary",
+      "location": "Introduction",
+      "tags": [
+        "reproducibility",
+        "seeds"
+      ],
+      "bib_key": "gallo2021_sensors"
+    },
+    {
+      "quote": "As these seeds are the only inputs required for all the stochastic processes within the sensors",
+      "source_type": "primary",
+      "location": "Introduction",
+      "tags": [
+        "reproducibility",
+        "seeds"
+      ],
+      "bib_key": "gallo2021_sensors"
+    },
+    {
+      "quote": "is the combination of a bias or first order random walk and a white noise process.",
+      "source_type": "primary",
+      "location": "Inertial sensors",
+      "tags": [
+        "error-composition",
+        "bias",
+        "white-noise"
+      ],
+      "bib_key": "gallo2021_sensors"
+    },
+    {
+      "quote": "The scale factor error is the departure of the input output gradient of the instrument from unity",
+      "source_type": "primary",
+      "location": "Inertial sensors",
+      "tags": [
+        "error-composition",
+        "scale-factor"
+      ],
+      "bib_key": "gallo2021_sensors"
+    },
+    {
+      "quote": "The cross coupling error is equal to the sine of the misalignment",
+      "source_type": "primary",
+      "location": "Inertial sensors",
+      "tags": [
+        "error-composition",
+        "misalignment"
+      ],
+      "bib_key": "gallo2021_sensors"
+    },
+    {
+      "quote": "the random walk within (42) is not allowed to vary freely",
+      "source_type": "primary",
+      "location": "Inertial sensors",
+      "tags": [
+        "bias-random-walk",
+        "bounded"
+      ],
+      "bib_key": "gallo2021_sensors"
+    },
+    {
+      "quote": "libm = { version = \"0.2.16\", default-features = false }",
+      "source_type": "primary",
+      "location": "Cargo.toml [dependencies]",
+      "tags": [
+        "no-std",
+        "libm",
+        "float-functions"
+      ],
+      "bib_key": "control_rs_manifest"
+    }
+  ]
+}

@@ -1,0 +1,95 @@
+{
+  "slug": "model-acceptance",
+  "idea": "Model acceptance: comparison of synthesized and held-out measurements, statistics and per-parameter verdict",
+  "date": "2026-10-30",
+  "prior_research_files": [
+    "sensor-model-pipeline.json",
+    "measurement-timing.json"
+  ],
+  "queries": [
+    {
+      "query": "Distributional comparison test and its limits",
+      "method": "web: NIST/SEMATECH e-Handbook 1.3.5.16",
+      "status": "resolved"
+    },
+    {
+      "query": "Held-out evaluation for dependent time series",
+      "method": "web: Bergmeir and Benitez 2012",
+      "status": "resolved"
+    },
+    {
+      "query": "Comparing Allan deviations of simulated and logged data",
+      "method": "prior file: MathWorks",
+      "status": "resolved"
+    },
+    {
+      "query": "Multiple-comparison control when many parameters are tested at once",
+      "method": "not searched",
+      "status": "open"
+    }
+  ],
+  "evidence": [
+    {
+      "quote": "used to decide if a sample comes from a population with a specific distribution.",
+      "source_type": "primary",
+      "location": "1.3.5.16, Purpose",
+      "tags": [
+        "ks-test",
+        "goodness-of-fit"
+      ],
+      "bib_key": "nist_ks"
+    },
+    {
+      "quote": "It only applies to continuous distributions.",
+      "source_type": "primary",
+      "location": "1.3.5.16, Limitations",
+      "tags": [
+        "ks-test",
+        "limitation"
+      ],
+      "bib_key": "nist_ks"
+    },
+    {
+      "quote": "the distribution must be fully specified.",
+      "source_type": "primary",
+      "location": "1.3.5.16, Limitations",
+      "tags": [
+        "ks-test",
+        "limitation",
+        "estimated-parameters"
+      ],
+      "bib_key": "nist_ks"
+    },
+    {
+      "quote": "it is common practice to reserve a part from the end of each time series for testing",
+      "source_type": "primary",
+      "location": "Abstract",
+      "tags": [
+        "held-out",
+        "time-series",
+        "last-block"
+      ],
+      "bib_key": "bergmeir2012_cv"
+    },
+    {
+      "quote": "theoretical problems invalidate the fundamental assumptions of cross-validation",
+      "source_type": "primary",
+      "location": "Abstract",
+      "tags": [
+        "cross-validation",
+        "dependence"
+      ],
+      "bib_key": "bergmeir2012_cv"
+    },
+    {
+      "quote": "we suggest that the use of a blocked form of cross-validation for time series evaluation became the standard procedure",
+      "source_type": "primary",
+      "location": "Abstract",
+      "tags": [
+        "blocked-cross-validation",
+        "time-series"
+      ],
+      "bib_key": "bergmeir2012_cv"
+    }
+  ]
+}

@@ -1,0 +1,100 @@
+{
+  "slug": "identification",
+  "idea": "Identification: shared estimation machinery (Allan variance fit, least squares), parameter uncertainty and fit/held-out splitting",
+  "date": "2026-10-30",
+  "prior_research_files": [
+    "sensor-model-pipeline.json",
+    "measurement-timing.json"
+  ],
+  "queries": [
+    {
+      "query": "Estimating noise parameters from Allan variance points using their variance and covariance",
+      "method": "web: Vaccaro and Zaki 2012 abstract",
+      "status": "resolved"
+    },
+    {
+      "query": "Splitting dependent time-series recordings into fit and held-out sets",
+      "method": "web: Bergmeir and Benitez 2012 abstract",
+      "status": "resolved"
+    },
+    {
+      "query": "Theoretical covariance between Allan variance points (formulae)",
+      "method": "abstract only; paper body not retrieved",
+      "status": "open"
+    }
+  ],
+  "evidence": [
+    {
+      "quote": "Previous work on gyro modeling is based on computing the Allan variance of a gyro signal",
+      "source_type": "primary",
+      "location": "Abstract",
+      "tags": [
+        "allan-variance",
+        "identification"
+      ],
+      "bib_key": "vaccaro2012_gyro"
+    },
+    {
+      "quote": "the theoretical variance of the Allan variance and the covariance between different Allan variance points.",
+      "source_type": "primary",
+      "location": "Abstract",
+      "tags": [
+        "allan-variance",
+        "covariance",
+        "weighting"
+      ],
+      "bib_key": "vaccaro2012_gyro"
+    },
+    {
+      "quote": "The algorithm is developed using the formulation of the best linear unbiased estimator from statistical estimation theory.",
+      "source_type": "primary",
+      "location": "Abstract",
+      "tags": [
+        "blue",
+        "estimator"
+      ],
+      "bib_key": "vaccaro2012_gyro"
+    },
+    {
+      "quote": "The performance of the algorithm is demonstrated using simulated and experimental data.",
+      "source_type": "primary",
+      "location": "Abstract",
+      "tags": [
+        "validation",
+        "simulation"
+      ],
+      "bib_key": "vaccaro2012_gyro"
+    },
+    {
+      "quote": "it is common practice to reserve a part from the end of each time series for testing",
+      "source_type": "primary",
+      "location": "Abstract",
+      "tags": [
+        "held-out",
+        "time-series",
+        "last-block"
+      ],
+      "bib_key": "bergmeir2012_cv"
+    },
+    {
+      "quote": "theoretical problems invalidate the fundamental assumptions of cross-validation",
+      "source_type": "primary",
+      "location": "Abstract",
+      "tags": [
+        "cross-validation",
+        "dependence"
+      ],
+      "bib_key": "bergmeir2012_cv"
+    },
+    {
+      "quote": "we suggest that the use of a blocked form of cross-validation for time series evaluation became the standard procedure",
+      "source_type": "primary",
+      "location": "Abstract",
+      "tags": [
+        "blocked-cross-validation",
+        "time-series"
+      ],
+      "bib_key": "bergmeir2012_cv"
+    }
+  ]
+}

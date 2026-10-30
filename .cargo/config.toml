@@ -1,0 +1,5 @@
+[alias]
+# Quality gates run through control-rs-ci (see .cargo/gate.toml), not a cargo alias.
+lint = ["clippy", "--all-targets", "--", "-D", "warnings"]
+fmt-check = ["fmt", "--all", "--", "--check"]
+fmt-all = ["fmt", "--all"]

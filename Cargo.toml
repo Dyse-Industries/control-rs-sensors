@@ -1,0 +1,20 @@
+[package]
+name = "control-rs-sensors"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.89"
+license = "MIT OR Apache-2.0"
+authors = ["Dyse Industries <dev@dyse.io>"]
+description = "Sensors: Data-driven sensor models for simulation in the control-rs ecosystem."
+repository = "https://github.com/Dyse-Industries/control-rs-sensors"
+readme = "README.md"
+keywords = ["sensors", "simulation", "control-rs", "embedded", "no-std"]
+categories = ["embedded", "simulation", "no-std"]
+
+[features]
+default = ["std"]
+std = ["control-rs/std"]
+
+[dependencies]
+# control-rs main at 9f13052 (2026-10-24, "Tracer method overhaul (#131)").
+control-rs = { git = "https://github.com/Dyse-Industries/control-rs", rev = "9f13052a986512077ad259e5f7fb98e1c1bc0c55", default-features = false }

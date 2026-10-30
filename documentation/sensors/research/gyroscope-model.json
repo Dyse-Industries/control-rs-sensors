@@ -1,0 +1,127 @@
+{
+  "slug": "gyroscope-model",
+  "idea": "Gyroscope family: error model including linear-acceleration sensitivity, calibration against the calibrated accelerometer, Earth-rate handling in static bias, stochastic identification (LSM6DSOX reference part)",
+  "date": "2026-10-30",
+  "prior_research_files": [
+    "sensor-model-pipeline.json",
+    "measurement-timing.json"
+  ],
+  "queries": [
+    {
+      "query": "Gyroscope calibration without a rate table and its dependency on accelerometer calibration",
+      "method": "web: Pretto and Grisetti, IMEKO TC4 2014",
+      "status": "resolved"
+    },
+    {
+      "query": "Linear acceleration (g) sensitivity of MEMS gyroscopes and vibration rectification (g x g)",
+      "method": "web: Scannell and Looney, Analog Devices slides",
+      "status": "resolved"
+    },
+    {
+      "query": "Earth rotation rate seen by a static gyroscope",
+      "method": "web: AHRS documentation of WGS84 (secondary)",
+      "status": "resolved"
+    },
+    {
+      "query": "Year and venue of Scannell and Looney, Dynamic Angle Estimation with Inertial MEMS",
+      "method": "not stated in the retrieved slides",
+      "status": "open"
+    },
+    {
+      "query": "LSM6DSOX linear-acceleration sensitivity of the gyroscope",
+      "method": "not in DS12814 Rev 4 as retrieved",
+      "status": "open"
+    },
+    {
+      "query": "Identification of gyroscope temperature coefficients from thermal runs",
+      "method": "not searched",
+      "status": "open"
+    }
+  ],
+  "evidence": [
+    {
+      "quote": "We use the calibrated accelerometers as a reference",
+      "source_type": "primary",
+      "location": "Gyroscope calibration",
+      "tags": [
+        "calibration",
+        "gyroscope",
+        "accelerometer-dependency"
+      ],
+      "bib_key": "pretto2014_imeko"
+    },
+    {
+      "quote": "computed integrating the angular velocities between",
+      "source_type": "primary",
+      "location": "Gyroscope calibration",
+      "tags": [
+        "calibration",
+        "gyroscope",
+        "integration"
+      ],
+      "bib_key": "pretto2014_imeko"
+    },
+    {
+      "quote": "For small angles, these misalignments can be linearly compensated by means of two misalignment matrices",
+      "source_type": "primary",
+      "location": "Sensor error model",
+      "tags": [
+        "misalignment",
+        "error-model"
+      ],
+      "bib_key": "pretto2014_imeko"
+    },
+    {
+      "quote": "between 36 to 50 distinct orientations",
+      "source_type": "primary",
+      "location": "Experiments",
+      "tags": [
+        "calibration",
+        "multi-position",
+        "orientations"
+      ],
+      "bib_key": "pretto2014_imeko"
+    },
+    {
+      "quote": "Linear Acceleration Effect on Bias",
+      "source_type": "primary",
+      "location": "Specification table",
+      "tags": [
+        "g-sensitivity",
+        "gyroscope"
+      ],
+      "bib_key": "scannell_looney_dynamic"
+    },
+    {
+      "quote": "The issue with rectified (g x g) is that it is difficult to observe and is one‐sided",
+      "source_type": "primary",
+      "location": "Vibration rectification",
+      "tags": [
+        "g-x-g",
+        "vibration-rectification",
+        "limitation"
+      ],
+      "bib_key": "scannell_looney_dynamic"
+    },
+    {
+      "quote": "g x g is rarely specified",
+      "source_type": "primary",
+      "location": "Vibration rectification",
+      "tags": [
+        "g-x-g",
+        "datasheet"
+      ],
+      "bib_key": "scannell_looney_dynamic"
+    },
+    {
+      "quote": "Earth’s Nominal Mean Angular Velocity 7.292115 x 10^-5 rad/s",
+      "source_type": "secondary",
+      "location": "WGS84 defining parameters",
+      "tags": [
+        "earth-rate",
+        "wgs84"
+      ],
+      "bib_key": "ahrs_wgs84"
+    }
+  ]
+}

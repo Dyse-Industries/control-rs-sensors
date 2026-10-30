@@ -1,0 +1,407 @@
+{
+  "slug": "measurement-timing",
+  "idea": "Timing models that wrap a sensor family's error model: bandwidth, sampling on the sensor's own clock with jitter, clock drift through a simple clock model (measured time = true time + noise), latency and delivery; and their identification from bench data",
+  "date": "2026-10-30",
+  "prior_research_files": [
+    "sensor-model-pipeline.json"
+  ],
+  "queries": [
+    {
+      "query": "Clock model for a sensor sampling clock: measured time as true time plus offset, rate error and noise",
+      "method": "web: Zucca and Tavella 2005 (IRIS abstract); Van Dierendonck, McGraw and Brown (NASA NTRS PTTI paper)",
+      "status": "resolved"
+    },
+    {
+      "query": "How clock noise parameters relate to the Allan variance, so a clock can be identified with the same machinery as a gyroscope",
+      "method": "web: Zucca and Tavella 2005; Van Dierendonck et al.",
+      "status": "resolved"
+    },
+    {
+      "query": "Actual versus configured ODR of the LSM6DSOX: unit-to-unit spread and per-device jitter",
+      "method": "web: ST Community thread 34928",
+      "status": "resolved"
+    },
+    {
+      "query": "Offset and rate (skew) between a sensor clock and a host clock when timestamps carry positive random latency",
+      "method": "web: Olson, A Passive Solution to the Sensor Synchronization Problem (author PDF)",
+      "status": "resolved"
+    },
+    {
+      "query": "Effect of sampling-clock jitter on sampled values",
+      "method": "web: Brannon, Analog Devices AN-756",
+      "status": "resolved"
+    },
+    {
+      "query": "Time-varying fractional delay for a drifting or jittering sample instant",
+      "method": "web: MathWorks DSP System Toolbox Variable Fractional Delay reference",
+      "status": "resolved"
+    },
+    {
+      "query": "Measuring MEMS sensor bandwidth and phase delay: rate table, spectral noise density, self-test step",
+      "method": "web: Looney, Analog Dialogue 46(3) 2012 and Analog Dialogue 41 2007",
+      "status": "resolved"
+    },
+    {
+      "query": "Sources of group delay in a MEMS inertial signal chain (sensor resonance, analog filters, decimation FIR stages)",
+      "method": "web: Looney, Analog Dialogue 46(3) 2012",
+      "status": "resolved"
+    },
+    {
+      "query": "Flicker frequency noise: whether a finite-order clock state model is adequate",
+      "method": "web: Van Dierendonck et al.",
+      "status": "resolved"
+    },
+    {
+      "query": "DOI and full abstract of Zucca and Tavella 2005",
+      "method": "IRIS records give no DOI or full abstract",
+      "status": "open"
+    },
+    {
+      "query": "Year and proceedings volume of Van Dierendonck, McGraw and Brown, Relationship Between Allan Variances and Kalman Filter Parameters",
+      "method": "NTRS PDF text gives neither",
+      "status": "open"
+    },
+    {
+      "query": "Olson 2010 venue and pages (IROS 2010 assumed by the search, not confirmed by the PDF text)",
+      "method": "author PDF gives no venue",
+      "status": "open"
+    },
+    {
+      "query": "LSM6DSOX self-test as a step input for bandwidth identification: step rise time and settling",
+      "method": "not searched in this pass",
+      "status": "open"
+    },
+    {
+      "query": "LSM6DSOX gyroscope LPF1 bandwidth table (Table 67) and phase values",
+      "method": "DS12814 Rev 4 fetch did not return it",
+      "status": "open"
+    },
+    {
+      "query": "Latency distribution of FIFO batching and bus transfer on the reference HIL link",
+      "method": "not searched in this pass; needs bench data",
+      "status": "open"
+    }
+  ],
+  "evidence": [
+    {
+      "quote": "The clock errors are modeled by stochastic differential equations (SDE)",
+      "source_type": "primary",
+      "location": "Abstract",
+      "tags": [
+        "clock-model",
+        "sde"
+      ],
+      "bib_key": "zucca2005_clockmodel"
+    },
+    {
+      "quote": "the relationships between the diffusion coefficients used in SDE and the Allan variance",
+      "source_type": "primary",
+      "location": "Abstract",
+      "tags": [
+        "clock-model",
+        "allan-variance",
+        "identification"
+      ],
+      "bib_key": "zucca2005_clockmodel"
+    },
+    {
+      "quote": "This relationship is fundamental when a mathematical clock model is used",
+      "source_type": "primary",
+      "location": "Abstract",
+      "tags": [
+        "clock-model",
+        "allan-variance"
+      ],
+      "bib_key": "zucca2005_clockmodel"
+    },
+    {
+      "quote": "We intentionally kept the identity of time exact in our model, i.e., xl=x.",
+      "source_type": "primary",
+      "location": "Two-state model",
+      "tags": [
+        "clock-model",
+        "state"
+      ],
+      "bib_key": "vandierendonck_allan_kalman"
+    },
+    {
+      "quote": "In this paper we will only consider those three processes in the time domain for the Kalman",
+      "source_type": "primary",
+      "location": "Noise processes",
+      "tags": [
+        "clock-model",
+        "white-frequency",
+        "random-walk-frequency",
+        "flicker"
+      ],
+      "bib_key": "vandierendonck_allan_kalman"
+    },
+    {
+      "quote": "No finite-order state model will fit flicker noise perfectly!",
+      "source_type": "primary",
+      "location": "Flicker noise",
+      "tags": [
+        "clock-model",
+        "flicker",
+        "limitation"
+      ],
+      "bib_key": "vandierendonck_allan_kalman"
+    },
+    {
+      "quote": "The phase noise spectral density is then transformed into a time domain",
+      "source_type": "primary",
+      "location": "h coefficients",
+      "tags": [
+        "clock-model",
+        "h-coefficients",
+        "allan-variance"
+      ],
+      "bib_key": "vandierendonck_allan_kalman"
+    },
+    {
+      "quote": "Yes, there can be a deviation from the nominal value of the ODR.",
+      "source_type": "primary",
+      "location": "ST Employee answer, Nov 13, 2020",
+      "tags": [
+        "lsm6dsox",
+        "odr",
+        "clock-rate"
+      ],
+      "bib_key": "st_community_odr_34928"
+    },
+    {
+      "quote": "Consider the ODR as a variable of average 52Hz and standard deviation of 1Hz.",
+      "source_type": "primary",
+      "location": "ST Employee answer, Nov 13, 2020",
+      "tags": [
+        "lsm6dsox",
+        "odr",
+        "clock-rate",
+        "unit-to-unit"
+      ],
+      "bib_key": "st_community_odr_34928"
+    },
+    {
+      "quote": "the jitter on a single device is much lower.",
+      "source_type": "primary",
+      "location": "ST Employee reply, Nov 13, 2020",
+      "tags": [
+        "lsm6dsox",
+        "jitter",
+        "per-device"
+      ],
+      "bib_key": "st_community_odr_34928"
+    },
+    {
+      "quote": "Let A denote the offset between clocks p and q.",
+      "source_type": "primary",
+      "location": "Clock model",
+      "tags": [
+        "clock-model",
+        "offset",
+        "synchronization"
+      ],
+      "bib_key": "olson2010_sync"
+    },
+    {
+      "quote": "Since the clocks drift, the offset between them is now a function of time.",
+      "source_type": "primary",
+      "location": "Clock model",
+      "tags": [
+        "clock-model",
+        "drift"
+      ],
+      "bib_key": "olson2010_sync"
+    },
+    {
+      "quote": "We also assume that the jitter e varies erratically from one measurement to another.",
+      "source_type": "primary",
+      "location": "Clock model",
+      "tags": [
+        "jitter",
+        "latency"
+      ],
+      "bib_key": "olson2010_sync"
+    },
+    {
+      "quote": "exploit causality information (i.e., that the the latency must be positive)",
+      "source_type": "primary",
+      "location": "Introduction",
+      "tags": [
+        "latency",
+        "causality",
+        "synchronization"
+      ],
+      "bib_key": "olson2010_sync"
+    },
+    {
+      "quote": "We exploit the property that some observations will be low-latency,",
+      "source_type": "primary",
+      "location": "Method",
+      "tags": [
+        "latency",
+        "synchronization",
+        "identification"
+      ],
+      "bib_key": "olson2010_sync"
+    },
+    {
+      "quote": "Our algorithm can significantly reduce the synchronization error, even in the presence of unknown latencies",
+      "source_type": "primary",
+      "location": "Abstract",
+      "tags": [
+        "synchronization",
+        "accuracy"
+      ],
+      "bib_key": "olson2010_sync"
+    },
+    {
+      "quote": "SNR limitations due to jitter can be determined by the following equation:",
+      "source_type": "primary",
+      "location": "Jitter",
+      "tags": [
+        "jitter",
+        "sampling",
+        "snr"
+      ],
+      "bib_key": "brannon2004_an756"
+    },
+    {
+      "quote": "as the input frequency increases for each doubling of the input frequency (doubling of the analog input slew rate), the energy due to jitter is expected to increase by 6 dB.",
+      "source_type": "primary",
+      "location": "Jitter",
+      "tags": [
+        "jitter",
+        "sampling",
+        "slew-rate"
+      ],
+      "bib_key": "brannon2004_an756"
+    },
+    {
+      "quote": "The Variable Fractional Delay block delays the input signal by a specified number of fractional samples",
+      "source_type": "secondary",
+      "location": "Description",
+      "tags": [
+        "fractional-delay",
+        "time-varying-delay"
+      ],
+      "bib_key": "mathworks_vfd"
+    },
+    {
+      "quote": "the linear interpolation method uses the two samples in memory nearest to the specified delay",
+      "source_type": "secondary",
+      "location": "Algorithms, Linear",
+      "tags": [
+        "fractional-delay",
+        "interpolation"
+      ],
+      "bib_key": "mathworks_vfd"
+    },
+    {
+      "quote": "The algorithm uses the LaGrange method to interpolate values.",
+      "source_type": "secondary",
+      "location": "Algorithms, Farrow",
+      "tags": [
+        "fractional-delay",
+        "farrow",
+        "lagrange"
+      ],
+      "bib_key": "mathworks_vfd"
+    },
+    {
+      "quote": "The most direct approach for testing frequency response in a gyroscope is with an inertial rate table.",
+      "source_type": "primary",
+      "location": "Testing frequency response",
+      "tags": [
+        "bandwidth",
+        "identification",
+        "rate-table"
+      ],
+      "bib_key": "looney2012_freqresp"
+    },
+    {
+      "quote": "Since the phase delay is dependent on the pole location, understanding and managing this can be very important.",
+      "source_type": "primary",
+      "location": "Filter stages",
+      "tags": [
+        "bandwidth",
+        "phase-delay"
+      ],
+      "bib_key": "looney2012_freqresp"
+    },
+    {
+      "quote": "the phase delay of a single-pole filter is equal to 45° at its −3-dB frequency.",
+      "source_type": "primary",
+      "location": "Analog interface filters",
+      "tags": [
+        "bandwidth",
+        "phase-delay"
+      ],
+      "bib_key": "looney2012_freqresp"
+    },
+    {
+      "quote": "the phase delay is equal to one-half of the total number of taps",
+      "source_type": "primary",
+      "location": "Averaging and decimation filters",
+      "tags": [
+        "group-delay",
+        "fir",
+        "decimation"
+      ],
+      "bib_key": "looney2012_freqresp"
+    },
+    {
+      "quote": "The wider bandwidth enables better time alignment and phase margin management for multisensor systems.",
+      "source_type": "primary",
+      "location": "Introduction",
+      "tags": [
+        "bandwidth",
+        "time-alignment"
+      ],
+      "bib_key": "looney2012_freqresp"
+    },
+    {
+      "quote": "This diagnostic can also be used to simulate a step input function.",
+      "source_type": "primary",
+      "location": "Self-test",
+      "tags": [
+        "self-test",
+        "step",
+        "identification"
+      ],
+      "bib_key": "looney2007_selftest"
+    },
+    {
+      "quote": "It also provides the ability to quickly check a manufacturer's bandwidth claims, without requiring any mechanical excitation.",
+      "source_type": "primary",
+      "location": "Self-test",
+      "tags": [
+        "self-test",
+        "bandwidth",
+        "identification"
+      ],
+      "bib_key": "looney2007_selftest"
+    },
+    {
+      "quote": "As filter structures get more complicated, establishing this link gets more difficult.",
+      "source_type": "primary",
+      "location": "Limitations",
+      "tags": [
+        "self-test",
+        "identifiability",
+        "limitation"
+      ],
+      "bib_key": "looney2007_selftest"
+    },
+    {
+      "quote": "Slow response within the self-test function itself will affect the overall response",
+      "source_type": "primary",
+      "location": "Limitations",
+      "tags": [
+        "self-test",
+        "limitation"
+      ],
+      "bib_key": "looney2007_selftest"
+    }
+  ]
+}

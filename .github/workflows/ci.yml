@@ -1,0 +1,46 @@
+name: CI Quality Gate (control-rs-sensors)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  CONTROL_RS_GIT: https://github.com/Dyse-Industries/control-rs
+
+jobs:
+  control-rs-ci:
+    name: control-rs-ci Gate Execution (control-rs-sensors)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      # The runner comes from the same control-rs commit as the dependency,
+      # read from Cargo.lock so the two never diverge.
+      - name: Resolve control-rs revision
+        id: rev
+        run: echo "rev=$(grep -oP 'control-rs\?rev=\K[0-9a-f]{40}' Cargo.lock | head -1)" >> "$GITHUB_OUTPUT"
+      - name: Cache control-rs-ci
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/bin/control-rs-ci
+          key: control-rs-ci-${{ runner.os }}-${{ steps.rev.outputs.rev }}
+      - name: Install control-rs-ci
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: cargo install --locked --git "$CONTROL_RS_GIT" --rev "${{ steps.rev.outputs.rev }}" control-rs-ci --bin control-rs-ci
+      - name: Run quality gates
+        run: control-rs-ci --verbose
+      - name: Upload control-rs-ci artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: control-rs-sensors-ci-artifacts
+          path: target/ci-artifacts

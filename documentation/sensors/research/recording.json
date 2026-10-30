@@ -1,0 +1,96 @@
+{
+  "slug": "recording",
+  "idea": "Recording: sample and provenance schema, run types, plain-text codec without dependencies",
+  "date": "2026-10-30",
+  "prior_research_files": [
+    "sensor-model-pipeline.json",
+    "measurement-timing.json",
+    "magnetometer-model.json"
+  ],
+  "queries": [
+    {
+      "query": "Plain-text tabular format conventions (header, record separation, field count)",
+      "method": "web: RFC 4180",
+      "status": "resolved"
+    },
+    {
+      "query": "Robotics log container with metadata and attachments as an alternative format",
+      "method": "web: MCAP specification",
+      "status": "resolved"
+    },
+    {
+      "query": "Provenance vocabulary (W3C PROV) for recording metadata",
+      "method": "not searched",
+      "status": "open"
+    },
+    {
+      "query": "Lossless storage of raw sensor counts and register settings alongside samples",
+      "method": "prior files: LSM6DSOX FIFO, LIS3MDL offset registers",
+      "status": "resolved"
+    }
+  ],
+  "evidence": [
+    {
+      "quote": "There maybe an optional header line appearing as the first line of the file with the same format as normal record lines.",
+      "source_type": "primary",
+      "location": "Section 2, rule 3",
+      "tags": [
+        "csv",
+        "header"
+      ],
+      "bib_key": "rfc4180"
+    },
+    {
+      "quote": "Each line should contain the same number of fields throughout the file.",
+      "source_type": "primary",
+      "location": "Section 2, rule 4",
+      "tags": [
+        "csv",
+        "schema"
+      ],
+      "bib_key": "rfc4180"
+    },
+    {
+      "quote": "there is no formal specification in existence, which allows for a wide variety of interpretations of CSV files.",
+      "source_type": "primary",
+      "location": "Section 1",
+      "tags": [
+        "csv",
+        "limitation"
+      ],
+      "bib_key": "rfc4180"
+    },
+    {
+      "quote": "MCAP is a modular container file format for recording timestamped pub/sub messages with arbitrary serialization formats.",
+      "source_type": "primary",
+      "location": "Overview",
+      "tags": [
+        "mcap",
+        "container"
+      ],
+      "bib_key": "mcap_spec"
+    },
+    {
+      "quote": "A metadata record contains arbitrary user data in key-value pairs.",
+      "source_type": "primary",
+      "location": "Metadata (op=0x0C)",
+      "tags": [
+        "mcap",
+        "metadata",
+        "provenance"
+      ],
+      "bib_key": "mcap_spec"
+    },
+    {
+      "quote": "Attachment records contain auxiliary artifacts such as text, core dumps, calibration data, or other arbitrary data.",
+      "source_type": "primary",
+      "location": "Attachment (op=0x09)",
+      "tags": [
+        "mcap",
+        "attachment",
+        "calibration"
+      ],
+      "bib_key": "mcap_spec"
+    }
+  ]
+}

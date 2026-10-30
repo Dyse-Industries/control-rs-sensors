@@ -1,0 +1,106 @@
+{
+  "slug": "accelerometer-model",
+  "idea": "Accelerometer family: error model, multi-position calibration, local gravity reference, stochastic identification, part configuration (LSM6DSOX reference part)",
+  "date": "2026-10-30",
+  "prior_research_files": [
+    "sensor-model-pipeline.json",
+    "measurement-timing.json"
+  ],
+  "queries": [
+    {
+      "query": "Accelerometer error model terms (misalignment, scale, bias) for low-cost MEMS IMUs",
+      "method": "web: Pretto and Grisetti, IMEKO TC4 2014",
+      "status": "resolved"
+    },
+    {
+      "query": "Calibration principle without external equipment and number of static orientations",
+      "method": "web: Pretto and Grisetti 2014; imu_tk README (prior file)",
+      "status": "resolved"
+    },
+    {
+      "query": "Local gravity magnitude as the calibration reference: normal gravity by latitude and height",
+      "method": "web: AHRS documentation of WGS84 (secondary)",
+      "status": "resolved"
+    },
+    {
+      "query": "Primary NGA WGS84 standard (TR8350.2 / NGA.STND.0036) for normal gravity constants",
+      "method": "not retrieved; only a secondary summary",
+      "status": "open"
+    },
+    {
+      "query": "Identification of accelerometer temperature coefficients from thermal runs",
+      "method": "not searched; datasheet coefficients in prior file",
+      "status": "open"
+    },
+    {
+      "query": "Vibration rectification and dynamic accelerometer errors",
+      "method": "not searched",
+      "status": "open"
+    }
+  ],
+  "evidence": [
+    {
+      "quote": "For small angles, these misalignments can be linearly compensated by means of two misalignment matrices",
+      "source_type": "primary",
+      "location": "Sensor error model",
+      "tags": [
+        "misalignment",
+        "error-model"
+      ],
+      "bib_key": "pretto2014_imeko"
+    },
+    {
+      "quote": "Both the accelerometers and the gyroscopes are also affected by scale errors",
+      "source_type": "primary",
+      "location": "Sensor error model",
+      "tags": [
+        "scale-factor",
+        "error-model"
+      ],
+      "bib_key": "pretto2014_imeko"
+    },
+    {
+      "quote": "the norms of the measured accelerations is assumed to be equal to the (known) magnitudes of the gravity",
+      "source_type": "primary",
+      "location": "Accelerometer calibration",
+      "tags": [
+        "calibration",
+        "multi-position",
+        "gravity"
+      ],
+      "bib_key": "pretto2014_imeko"
+    },
+    {
+      "quote": "between 36 to 50 distinct orientations",
+      "source_type": "primary",
+      "location": "Experiments",
+      "tags": [
+        "calibration",
+        "multi-position",
+        "orientations"
+      ],
+      "bib_key": "pretto2014_imeko"
+    },
+    {
+      "quote": "Using the property tanβ=b/a tanφ, we define a closed form formula to find the normal gravity g at any given latitude φ [Somigliana1929]:",
+      "source_type": "secondary",
+      "location": "Normal gravity",
+      "tags": [
+        "gravity",
+        "wgs84",
+        "somigliana"
+      ],
+      "bib_key": "ahrs_wgs84"
+    },
+    {
+      "quote": "At small heights above the surface, the normal gravity can be approximated with a truncated Taylor Series with a positive direction downward along the geodetic normal to the ellipsoid:",
+      "source_type": "secondary",
+      "location": "Normal gravity",
+      "tags": [
+        "gravity",
+        "height-correction"
+      ],
+      "bib_key": "ahrs_wgs84"
+    }
+  ]
+}

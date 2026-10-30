@@ -1,0 +1,113 @@
+{
+  "slug": "hil-collection",
+  "idea": "HIL collection: firmware and host-collector conventions, framing, host time reference, HIL gates in control-rs-ci",
+  "date": "2026-10-30",
+  "prior_research_files": [
+    "sensor-model-pipeline.json",
+    "measurement-timing.json"
+  ],
+  "queries": [
+    {
+      "query": "Byte-stuffed packet framing for a serial stream",
+      "method": "web: Cheshire and Baker, COBS",
+      "status": "resolved"
+    },
+    {
+      "query": "What control-rs provides on the host side for target transports",
+      "method": "control-rs Cargo.toml metadata",
+      "status": "resolved"
+    },
+    {
+      "query": "How control-rs-ci runs opt-in gates (default = false) and where artifacts land",
+      "method": "control-rs-ci README",
+      "status": "resolved"
+    },
+    {
+      "query": "Host receive-time jitter of USB CDC on common operating systems",
+      "method": "not searched; needs bench data",
+      "status": "open"
+    },
+    {
+      "query": "Volume, issue and pages of Cheshire and Baker 1999",
+      "method": "not stated on the retrieved page",
+      "status": "open"
+    }
+  ],
+  "evidence": [
+    {
+      "quote": "It guarantees in the worst case to add no more than one byte in 254 to any packet.",
+      "source_type": "primary",
+      "location": "Abstract",
+      "tags": [
+        "framing",
+        "cobs",
+        "overhead"
+      ],
+      "bib_key": "cheshire1999_cobs"
+    },
+    {
+      "quote": "a zero byte can now be used unambiguously to mark boundaries between packets.",
+      "source_type": "primary",
+      "location": "Section III.A",
+      "tags": [
+        "framing",
+        "cobs",
+        "delimiter"
+      ],
+      "bib_key": "cheshire1999_cobs"
+    },
+    {
+      "quote": "Furthermore, the COBS algorithm is computationally cheap.",
+      "source_type": "primary",
+      "location": "Abstract",
+      "tags": [
+        "framing",
+        "cobs",
+        "cost"
+      ],
+      "bib_key": "cheshire1999_cobs"
+    },
+    {
+      "quote": "description = \"Host-side transport, framing and headless runner for the control-rs Embedded Test Server.\"",
+      "source_type": "primary",
+      "location": "control-rs-ets-host/Cargo.toml",
+      "tags": [
+        "ets-host",
+        "transport",
+        "metadata"
+      ],
+      "bib_key": "control_rs_manifest"
+    },
+    {
+      "quote": "description = \"Quality gate runner, artifact aggregator, and verification harness for control-rs.\"",
+      "source_type": "primary",
+      "location": "control-rs-ci/Cargo.toml",
+      "tags": [
+        "control-rs-ci",
+        "gates",
+        "metadata"
+      ],
+      "bib_key": "control_rs_manifest"
+    },
+    {
+      "quote": "cargo ci --all             # include default = false gates (mutants-*, regression)",
+      "source_type": "primary",
+      "location": "control-rs-ci/README.md, Usage",
+      "tags": [
+        "control-rs-ci",
+        "opt-in-gates"
+      ],
+      "bib_key": "control_rs_ci_readme"
+    },
+    {
+      "quote": "Artifacts are written to `target/ci-artifacts` (`[runner].out_dir`).",
+      "source_type": "primary",
+      "location": "control-rs-ci/README.md, Usage",
+      "tags": [
+        "control-rs-ci",
+        "artifacts"
+      ],
+      "bib_key": "control_rs_ci_readme"
+    }
+  ]
+}

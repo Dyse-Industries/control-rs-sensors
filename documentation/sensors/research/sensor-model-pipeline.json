@@ -1,0 +1,963 @@
+{
+  "slug": "sensor-model-pipeline",
+  "idea": "Pipeline producing data-driven sensor error models (LSM6DSOX gyro/accel + 3-axis magnetometer first) from HIL recordings: collection, parameter estimation (Allan variance, calibration), simulation and export",
+  "date": "2026-10-30",
+  "prior_research_files": [],
+  "queries": [
+    {
+      "query": "Which error terms make up a MEMS gyroscope/accelerometer stochastic model (white noise, bias random walk, bias instability, quantization, rate ramp)?",
+      "method": "web: Kalibr wiki, MathWorks Navigation Toolbox, UCGE report 20201",
+      "status": "resolved"
+    },
+    {
+      "query": "How are noise density and bias random walk converted to discrete-time simulation parameters at a given sample rate?",
+      "method": "web: Kalibr wiki IMU Noise Model",
+      "status": "resolved"
+    },
+    {
+      "query": "How are stochastic parameters read from an Allan deviation plot (slopes, tau at which coefficients are read)?",
+      "method": "web: MathWorks Navigation Toolbox documentation",
+      "status": "resolved"
+    },
+    {
+      "query": "Which Allan variance estimator and confidence-interval method apply to finite recordings?",
+      "method": "web: NIST SP 1065",
+      "status": "resolved"
+    },
+    {
+      "query": "How long must a static recording be for Allan variance identification of a MEMS IMU?",
+      "method": "web: allan_variance_ros README",
+      "status": "resolved"
+    },
+    {
+      "query": "How is an identified stochastic model validated in simulation against recorded data?",
+      "method": "web: MathWorks Navigation Toolbox documentation; allan_variance_ros README",
+      "status": "resolved"
+    },
+    {
+      "query": "Do static-data noise parameters transfer to dynamic use (scale factor, temperature, inflation factor)?",
+      "method": "web: Kalibr wiki",
+      "status": "resolved"
+    },
+    {
+      "query": "LSM6DSOX datasheet: full scales, sensitivities, zero-level offsets, temperature coefficients, noise densities, ODRs",
+      "method": "web: STMicroelectronics DS12814 Rev 4",
+      "status": "resolved"
+    },
+    {
+      "query": "LSM6DSOX sensor hub and FIFO: external magnetometer connection, timestamp batching",
+      "method": "web: STMicroelectronics DS12814 Rev 4",
+      "status": "resolved"
+    },
+    {
+      "query": "Deterministic accelerometer/gyroscope calibration (scale, misalignment, bias) without external equipment",
+      "method": "web: imu_tk README (Tedaldi, Pretto, Menegatti, ICRA 2014)",
+      "status": "resolved"
+    },
+    {
+      "query": "Magnetometer error model: hard iron, soft iron, scale, non-orthogonality, offset, noise; ellipsoid locus",
+      "method": "web: Liu et al. 2014, Sensors",
+      "status": "resolved"
+    },
+    {
+      "query": "Magnetometer interference from vehicle supply current and its compensation model",
+      "method": "web: Chen et al. 2023, Applied Sciences",
+      "status": "resolved"
+    },
+    {
+      "query": "Existing simulator sensor-noise parameterizations usable as export targets (Gazebo, Kalibr YAML)",
+      "method": "web: Gazebo classic sensor noise tutorial; Kalibr wiki; allan_variance_ros README",
+      "status": "resolved"
+    },
+    {
+      "query": "Vasconcelos et al. 2011 geometric magnetometer calibration (IEEE TAES 47(2), 1293-1306): abstract and model statements",
+      "method": "web: crossref metadata only; abstract not retrieved",
+      "status": "open"
+    },
+    {
+      "query": "LIS3MDL (magnetometer paired with the LSM6DSOX): range, sensitivity, zero-gauss level, noise, non-linearity, ODR, temperature sensor",
+      "method": "web: STMicroelectronics DocID024204 Rev 6 (espruino.com mirror)",
+      "status": "resolved"
+    },
+    {
+      "query": "IEEE Std 952 / IEEE Std 1293 normative definitions of gyroscope and accelerometer error terms and scale-factor/misalignment model equations",
+      "method": "not retrieved: paywalled",
+      "status": "open"
+    },
+    {
+      "query": "Temperature-dependent bias and scale models identified from thermal-chamber or warm-up recordings",
+      "method": "not searched in this pass",
+      "status": "open"
+    },
+    {
+      "query": "Recording format for HIL sensor data (HDF5, CSV plus sidecar, binary) and provenance metadata conventions",
+      "method": "not searched in this pass",
+      "status": "open"
+    },
+    {
+      "query": "Time synchronization and latency identification between target sample time and host receive time",
+      "method": "not searched in this pass",
+      "status": "open"
+    },
+    {
+      "query": "Why do sensor timestamps differ from sampling instants, and what happens to an estimator when the offset is unmodeled or time-varying?",
+      "method": "web: Li and Mourikis, IJRR (author-hosted PDF)",
+      "status": "resolved"
+    },
+    {
+      "query": "Can constant sensor time offsets be identified from data, and to what accuracy?",
+      "method": "web: Rehder, Siegwart and Furgale, IEEE T-RO 32(2), in Rehder ETH dissertation 24957",
+      "status": "resolved"
+    },
+    {
+      "query": "LSM6DSOX internal digital filters (LPF1, LPF2): transfer function, cutoff per ODR, phase delay",
+      "method": "web: STMicroelectronics DS12814 Rev 4 Table 18; ST community thread 25081",
+      "status": "resolved"
+    },
+    {
+      "query": "Representation of delays that are not an integer number of samples (fractional delay filters)",
+      "method": "web: Laakso et al. 1996 (academia.edu copy); MathWorks DSP System Toolbox lagrange reference",
+      "status": "resolved"
+    },
+    {
+      "query": "LSM6DSOX gyroscope LPF1 bandwidth table (Table 67) and phase delay values",
+      "method": "web: DS12814 Rev 4 fetch did not return Table 67",
+      "status": "open"
+    },
+    {
+      "query": "Identification of sensor bandwidth and group delay from bench excitation (rate table, shaker, step) with a timing reference",
+      "method": "not searched in this pass",
+      "status": "open"
+    },
+    {
+      "query": "Clock drift and jitter models for a sensor sampling clock relative to simulation time",
+      "method": "not searched in this pass",
+      "status": "open"
+    }
+  ],
+  "evidence": [
+    {
+      "quote": "The IMU measurement model used in Kalibr contains two types of sensor errors",
+      "source_type": "primary",
+      "location": "IMU Noise Model",
+      "tags": [
+        "imu",
+        "noise-model",
+        "white-noise",
+        "bias"
+      ],
+      "bib_key": "kalibr_imu_noise_model"
+    },
+    {
+      "quote": "an additive noise term that fluctuates very rapidly (\"white noise\")",
+      "source_type": "primary",
+      "location": "IMU Noise Model",
+      "tags": [
+        "imu",
+        "white-noise"
+      ],
+      "bib_key": "kalibr_imu_noise_model"
+    },
+    {
+      "quote": "In Kalibr, slow variations in the sensor bias are modelled with a \"Brownian motion\" process",
+      "source_type": "primary",
+      "location": "IMU Noise Model, Bias",
+      "tags": [
+        "imu",
+        "bias-random-walk"
+      ],
+      "bib_key": "kalibr_imu_noise_model"
+    },
+    {
+      "quote": "$$\\sigma_{g_d}=\\sigma_g\\frac{1}{\\sqrt{\\Delta t}}$$",
+      "source_type": "primary",
+      "location": "IMU Noise Model, Additive \"White Noise\"",
+      "tags": [
+        "discretization",
+        "white-noise",
+        "simulation"
+      ],
+      "bib_key": "kalibr_imu_noise_model"
+    },
+    {
+      "quote": "where $\\Delta t$ is the sampling time. This is identical to the discrete-time implementation within Kalibr.",
+      "source_type": "primary",
+      "location": "IMU Noise Model, Additive \"White Noise\"",
+      "tags": [
+        "discretization",
+        "simulation"
+      ],
+      "bib_key": "kalibr_imu_noise_model"
+    },
+    {
+      "quote": "$$b_d[k]=b_d[k-1]+\\sigma_{bgd} w[k]$$",
+      "source_type": "primary",
+      "location": "IMU Noise Model, Bias",
+      "tags": [
+        "discretization",
+        "bias-random-walk",
+        "simulation"
+      ],
+      "bib_key": "kalibr_imu_noise_model"
+    },
+    {
+      "quote": "$$\\sigma_{bgd}=\\sigma_{b_g}\\sqrt{\\Delta t}$$",
+      "source_type": "primary",
+      "location": "IMU Noise Model, Bias",
+      "tags": [
+        "discretization",
+        "bias-random-walk",
+        "simulation"
+      ],
+      "bib_key": "kalibr_imu_noise_model"
+    },
+    {
+      "quote": "Table 1: Summary of the IMU noise model parameters as they can be specified in the IMU configuration YAML file of Kalibr.",
+      "source_type": "primary",
+      "location": "IMU Noise Model, The Noise Model Parameters in Kalibr",
+      "tags": [
+        "export",
+        "parameter-schema",
+        "yaml"
+      ],
+      "bib_key": "kalibr_imu_noise_model"
+    },
+    {
+      "quote": "deriving the parameters from an Allan standard deviation plot is probably the most common and standardized procedure.",
+      "source_type": "primary",
+      "location": "IMU Noise Model",
+      "tags": [
+        "allan-variance",
+        "identification"
+      ],
+      "bib_key": "kalibr_imu_noise_model"
+    },
+    {
+      "quote": "the IMU measurement error model used here is derived from a sensor which does not undergo motion",
+      "source_type": "primary",
+      "location": "IMU Noise Model",
+      "tags": [
+        "static-data",
+        "limitation"
+      ],
+      "bib_key": "kalibr_imu_noise_model"
+    },
+    {
+      "quote": "Hence scale factor errors and bias variation caused by temperature changes, for example, are not accounted for.",
+      "source_type": "primary",
+      "location": "IMU Noise Model",
+      "tags": [
+        "scale-factor",
+        "temperature",
+        "limitation"
+      ],
+      "bib_key": "kalibr_imu_noise_model"
+    },
+    {
+      "quote": "if you use directly the \"sigmas\" obtained from static sensor data, Kalibr will tend to trust your IMU measurements too much",
+      "source_type": "primary",
+      "location": "IMU Noise Model",
+      "tags": [
+        "static-data",
+        "inflation",
+        "limitation"
+      ],
+      "bib_key": "kalibr_imu_noise_model"
+    },
+    {
+      "quote": "increasing the noise model parameters by a factor of 10 or more may be necessary",
+      "source_type": "primary",
+      "location": "IMU Noise Model",
+      "tags": [
+        "inflation",
+        "limitation"
+      ],
+      "bib_key": "kalibr_imu_noise_model"
+    },
+    {
+      "quote": "The reason is that in practice, the bias does not truly behave like a \"random walk\" for longer integration times.",
+      "source_type": "primary",
+      "location": "IMU Noise Model",
+      "tags": [
+        "bias-random-walk",
+        "limitation"
+      ],
+      "bib_key": "kalibr_imu_noise_model"
+    },
+    {
+      "quote": "Accelerometer measurement range ±2, ±4, ±8, ±16 g",
+      "source_type": "primary",
+      "location": "Table 2, LA_FS",
+      "tags": [
+        "lsm6dsox",
+        "accelerometer",
+        "range"
+      ],
+      "bib_key": "st_lsm6dsox_ds12814"
+    },
+    {
+      "quote": "Gyroscope measurement range ±125, ±250, ±500, ±1000, ±2000 dps",
+      "source_type": "primary",
+      "location": "Table 2, G_FS",
+      "tags": [
+        "lsm6dsox",
+        "gyroscope",
+        "range"
+      ],
+      "bib_key": "st_lsm6dsox_ds12814"
+    },
+    {
+      "quote": "Accelerometer zero-g level offset accuracy ±20 mg",
+      "source_type": "primary",
+      "location": "Table 2, LA_TyOff",
+      "tags": [
+        "lsm6dsox",
+        "accelerometer",
+        "turn-on-bias"
+      ],
+      "bib_key": "st_lsm6dsox_ds12814"
+    },
+    {
+      "quote": "Gyroscope zero-rate level ±1 dps",
+      "source_type": "primary",
+      "location": "Table 2, G_TyOff",
+      "tags": [
+        "lsm6dsox",
+        "gyroscope",
+        "turn-on-bias"
+      ],
+      "bib_key": "st_lsm6dsox_ds12814"
+    },
+    {
+      "quote": "Accelerometer zero-g level change vs. temperature ±0.1 mg/°C",
+      "source_type": "primary",
+      "location": "Table 2, LA_OffDr",
+      "tags": [
+        "lsm6dsox",
+        "accelerometer",
+        "temperature"
+      ],
+      "bib_key": "st_lsm6dsox_ds12814"
+    },
+    {
+      "quote": "Gyroscope zero-rate level change vs. temperature ±0.010 dps/°C",
+      "source_type": "primary",
+      "location": "Table 2, G_OffDr",
+      "tags": [
+        "lsm6dsox",
+        "gyroscope",
+        "temperature"
+      ],
+      "bib_key": "st_lsm6dsox_ds12814"
+    },
+    {
+      "quote": "Accelerometer sensitivity change vs. temperature ±0.01 %/°C",
+      "source_type": "primary",
+      "location": "Table 2, LA_SoDr",
+      "tags": [
+        "lsm6dsox",
+        "accelerometer",
+        "scale-factor",
+        "temperature"
+      ],
+      "bib_key": "st_lsm6dsox_ds12814"
+    },
+    {
+      "quote": "Gyroscope sensitivity change vs. temperature ±0.007 %/°C",
+      "source_type": "primary",
+      "location": "Table 2, G_SoDr",
+      "tags": [
+        "lsm6dsox",
+        "gyroscope",
+        "scale-factor",
+        "temperature"
+      ],
+      "bib_key": "st_lsm6dsox_ds12814"
+    },
+    {
+      "quote": "Rate noise density in high-performance mode 3.8 mdps/√Hz",
+      "source_type": "primary",
+      "location": "Table 2, Rn",
+      "tags": [
+        "lsm6dsox",
+        "gyroscope",
+        "noise-density"
+      ],
+      "bib_key": "st_lsm6dsox_ds12814"
+    },
+    {
+      "quote": "Acceleration noise density in high-performance mode 70 (±2 g), 75 (±4 g), 80 (±8 g), 110 (±16 g) µg/√Hz",
+      "source_type": "primary",
+      "location": "Table 2, An",
+      "tags": [
+        "lsm6dsox",
+        "accelerometer",
+        "noise-density"
+      ],
+      "bib_key": "st_lsm6dsox_ds12814"
+    },
+    {
+      "quote": "Gyroscope output data rate 12.5, 26, 52, 104, 208, 416, 833, 1666, 3332, 6664 Hz",
+      "source_type": "primary",
+      "location": "Table 2, G_ODR",
+      "tags": [
+        "lsm6dsox",
+        "gyroscope",
+        "odr"
+      ],
+      "bib_key": "st_lsm6dsox_ds12814"
+    },
+    {
+      "quote": "It is also possible to connect an external sensor (magnetometer) by using the sensor hub feature (mode 2).",
+      "source_type": "primary",
+      "location": "§2.3",
+      "tags": [
+        "lsm6dsox",
+        "sensor-hub",
+        "magnetometer"
+      ],
+      "bib_key": "st_lsm6dsox_ds12814"
+    },
+    {
+      "quote": "Up to six total sensors: two internal (accelerometer and gyroscope) and four external sensors",
+      "source_type": "primary",
+      "location": "§2",
+      "tags": [
+        "lsm6dsox",
+        "sensor-hub"
+      ],
+      "bib_key": "st_lsm6dsox_ds12814"
+    },
+    {
+      "quote": "It is possible to select decimation for timestamp batching in FIFO with a factor of 1, 8, or 32.",
+      "source_type": "primary",
+      "location": "§6.6",
+      "tags": [
+        "lsm6dsox",
+        "fifo",
+        "timestamp"
+      ],
+      "bib_key": "st_lsm6dsox_ds12814"
+    },
+    {
+      "quote": "The fully overlapping Allan variance, or AVAR, is a form of the normal Allan variance",
+      "source_type": "primary",
+      "location": "Handbook of Frequency Stability Analysis",
+      "tags": [
+        "allan-variance",
+        "estimator"
+      ],
+      "bib_key": "riley2008_sp1065"
+    },
+    {
+      "quote": "The use of overlapping samples improves the confidence of the resulting stability estimate",
+      "source_type": "primary",
+      "location": "Handbook of Frequency Stability Analysis",
+      "tags": [
+        "allan-variance",
+        "confidence"
+      ],
+      "bib_key": "riley2008_sp1065"
+    },
+    {
+      "quote": "for the estimate with a certain confidence factor, based on Chi-squared statistics.",
+      "source_type": "primary",
+      "location": "Handbook of Frequency Stability Analysis",
+      "tags": [
+        "allan-variance",
+        "confidence",
+        "chi-squared"
+      ],
+      "bib_key": "riley2008_sp1065"
+    },
+    {
+      "quote": "Allan variance is a method of representing root mean square (RMS) random drift error as a function of averaging time",
+      "source_type": "primary",
+      "location": "Chapter 1",
+      "tags": [
+        "allan-variance",
+        "definition"
+      ],
+      "bib_key": "hou2004_ucge20201"
+    },
+    {
+      "quote": "Allan variance does not always determine a unique noise spectrum.",
+      "source_type": "primary",
+      "location": "Chapter 4",
+      "tags": [
+        "allan-variance",
+        "identifiability",
+        "limitation"
+      ],
+      "bib_key": "hou2004_ucge20201"
+    },
+    {
+      "quote": "The above equation is a line with a slope of -1/2 when plotted on a log-log plot of",
+      "source_type": "secondary",
+      "location": "Inertial Sensor Noise Analysis Using Allan Variance",
+      "tags": [
+        "allan-variance",
+        "identification"
+      ],
+      "bib_key": "mathworks_allan_variance"
+    },
+    {
+      "quote": "The value of N can be read directly off of this line at",
+      "source_type": "secondary",
+      "location": "Inertial Sensor Noise Analysis Using Allan Variance",
+      "tags": [
+        "allan-variance",
+        "identification"
+      ],
+      "bib_key": "mathworks_allan_variance"
+    },
+    {
+      "quote": "The above equation is a line with a slope of 1/2 when plotted on a log-log plot of",
+      "source_type": "secondary",
+      "location": "Inertial Sensor Noise Analysis Using Allan Variance",
+      "tags": [
+        "allan-variance",
+        "identification"
+      ],
+      "bib_key": "mathworks_allan_variance"
+    },
+    {
+      "quote": "The value of K can be read directly off of this line at",
+      "source_type": "secondary",
+      "location": "Inertial Sensor Noise Analysis Using Allan Variance",
+      "tags": [
+        "allan-variance",
+        "identification"
+      ],
+      "bib_key": "mathworks_allan_variance"
+    },
+    {
+      "quote": "The value of B can be read directly off of this line with a scaling of",
+      "source_type": "secondary",
+      "location": "Inertial Sensor Noise Analysis Using Allan Variance",
+      "tags": [
+        "allan-variance",
+        "identification"
+      ],
+      "bib_key": "mathworks_allan_variance"
+    },
+    {
+      "quote": "Calculate the simulated Allan deviation and compare it to the logged data.",
+      "source_type": "secondary",
+      "location": "Inertial Sensor Noise Analysis Using Allan Variance",
+      "tags": [
+        "validation",
+        "simulation"
+      ],
+      "bib_key": "mathworks_allan_variance"
+    },
+    {
+      "quote": "The gyroscope model can be used to generate measurements using movements that are not easily captured with hardware.",
+      "source_type": "secondary",
+      "location": "Inertial Sensor Noise Analysis Using Allan Variance",
+      "tags": [
+        "simulation",
+        "use-case"
+      ],
+      "bib_key": "mathworks_allan_variance"
+    },
+    {
+      "quote": "Will produce an imu.yaml file",
+      "source_type": "primary",
+      "location": "README",
+      "tags": [
+        "export",
+        "yaml",
+        "kalibr"
+      ],
+      "bib_key": "buchanan_allan_variance_ros"
+    },
+    {
+      "quote": "at least 3 hours of data",
+      "source_type": "primary",
+      "location": "README",
+      "tags": [
+        "recording-duration",
+        "allan-variance"
+      ],
+      "bib_key": "buchanan_allan_variance_ros"
+    },
+    {
+      "quote": "can generate a rosbag of simulated IMU noise and run allan_variance_ros to verify the tool is working",
+      "source_type": "primary",
+      "location": "README",
+      "tags": [
+        "validation",
+        "simulation",
+        "round-trip"
+      ],
+      "bib_key": "buchanan_allan_variance_ros"
+    },
+    {
+      "quote": "For IMU sensors, we model two kinds of disturbance to angular rates and linear accelerations: noise and bias.",
+      "source_type": "primary",
+      "location": "Tutorial: Sensor Noise Model",
+      "tags": [
+        "simulator",
+        "export",
+        "imu"
+      ],
+      "bib_key": "gazebo_sensor_noise"
+    },
+    {
+      "quote": "Bias is also additive, but it is sampled once, at the start of simulation.",
+      "source_type": "primary",
+      "location": "Tutorial: Sensor Noise Model",
+      "tags": [
+        "simulator",
+        "turn-on-bias"
+      ],
+      "bib_key": "gazebo_sensor_noise"
+    },
+    {
+      "quote": "implements a multi-position calibration method that does not require any parameter tuning",
+      "source_type": "primary",
+      "location": "README",
+      "tags": [
+        "calibration",
+        "multi-position",
+        "deterministic"
+      ],
+      "bib_key": "imu_tk_readme"
+    },
+    {
+      "quote": "simply requires the sensor to be moved by hand and placed in a set of different, automatically detected,",
+      "source_type": "primary",
+      "location": "README",
+      "tags": [
+        "calibration",
+        "multi-position",
+        "procedure"
+      ],
+      "bib_key": "imu_tk_readme"
+    },
+    {
+      "quote": "the ideal locus of the three-axis magnetometer output lies on a spherical surface",
+      "source_type": "primary",
+      "location": "Introduction",
+      "tags": [
+        "magnetometer",
+        "ellipsoid"
+      ],
+      "bib_key": "liu2014_magcal"
+    },
+    {
+      "quote": "the actual locus of the magnetometer measurement outcome lies on an ellipsoid under the disturbance of error.",
+      "source_type": "primary",
+      "location": "Introduction",
+      "tags": [
+        "magnetometer",
+        "ellipsoid",
+        "calibration"
+      ],
+      "bib_key": "liu2014_magcal"
+    },
+    {
+      "quote": "This type of error results from permanent magnets and magnetic hysteresis, that is, remanence of magnetized iron materials.",
+      "source_type": "primary",
+      "location": "Error model, hard iron",
+      "tags": [
+        "magnetometer",
+        "hard-iron"
+      ],
+      "bib_key": "liu2014_magcal"
+    },
+    {
+      "quote": "Ferromagnetic materials produce an inductive magnetic field under the influence of a geomagnetic field",
+      "source_type": "primary",
+      "location": "Error model, soft iron",
+      "tags": [
+        "magnetometer",
+        "soft-iron"
+      ],
+      "bib_key": "liu2014_magcal"
+    },
+    {
+      "quote": "zero deviation, sensitivity errors, non-orthogonal errors, misalignment errors, measurement noise",
+      "source_type": "primary",
+      "location": "Error model",
+      "tags": [
+        "magnetometer",
+        "error-terms"
+      ],
+      "bib_key": "liu2014_magcal"
+    },
+    {
+      "quote": "the magnetic interference has a strong correlation with the current change in time.",
+      "source_type": "primary",
+      "location": "Results",
+      "tags": [
+        "magnetometer",
+        "current-interference"
+      ],
+      "bib_key": "chen2023_maginterference"
+    },
+    {
+      "quote": "the magnetic interference caused by current is related to source current, wire shape and observation distance.",
+      "source_type": "primary",
+      "location": "Analysis",
+      "tags": [
+        "magnetometer",
+        "current-interference"
+      ],
+      "bib_key": "chen2023_maginterference"
+    },
+    {
+      "quote": "the compensation improvement ratio (IR) is greater than 10.",
+      "source_type": "primary",
+      "location": "Abstract",
+      "tags": [
+        "magnetometer",
+        "compensation"
+      ],
+      "bib_key": "chen2023_maginterference"
+    },
+    {
+      "quote": "Measurement range ±4, ±8, ±12, ±16 gauss",
+      "source_type": "primary",
+      "location": "Table 3, FS",
+      "tags": [
+        "lis3mdl",
+        "magnetometer",
+        "range"
+      ],
+      "bib_key": "st_lis3mdl_docid024204"
+    },
+    {
+      "quote": "Sensitivity FS=±4 gauss: 6842; FS=±8 gauss: 3421; FS=±12 gauss: 2281; FS=±16 gauss: 1711 LSB/gauss",
+      "source_type": "primary",
+      "location": "Table 3, GN",
+      "tags": [
+        "lis3mdl",
+        "magnetometer",
+        "scale-factor"
+      ],
+      "bib_key": "st_lis3mdl_docid024204"
+    },
+    {
+      "quote": "Zero-gauss level FS=±4 gauss: ±1 gauss",
+      "source_type": "primary",
+      "location": "Table 3, Zgauss",
+      "tags": [
+        "lis3mdl",
+        "magnetometer",
+        "turn-on-bias"
+      ],
+      "bib_key": "st_lis3mdl_docid024204"
+    },
+    {
+      "quote": "RMS noise X-axis, FS=±12 gauss, Ultra-high-performance mode: 3.2 mgauss; Y-axis: 3.2 mgauss; Z-axis: 4.1 mgauss",
+      "source_type": "primary",
+      "location": "Table 3, RMS",
+      "tags": [
+        "lis3mdl",
+        "magnetometer",
+        "noise"
+      ],
+      "bib_key": "st_lis3mdl_docid024204"
+    },
+    {
+      "quote": "Non-linearity Best-fit straight line, FS=±12 gauss, Happlied=±6 gauss: ±0.12 %FS",
+      "source_type": "primary",
+      "location": "Table 3, NL",
+      "tags": [
+        "lis3mdl",
+        "magnetometer",
+        "non-linearity"
+      ],
+      "bib_key": "st_lis3mdl_docid024204"
+    },
+    {
+      "quote": "Magnetic disturbance field Zero-gauss offset starts to degrade: 50 gauss",
+      "source_type": "primary",
+      "location": "Table 3, DF",
+      "tags": [
+        "lis3mdl",
+        "magnetometer",
+        "disturbance"
+      ],
+      "bib_key": "st_lis3mdl_docid024204"
+    },
+    {
+      "quote": "Temperature sensor output change vs. temperature 8 LSB/°C",
+      "source_type": "primary",
+      "location": "Table 4, TSDr",
+      "tags": [
+        "lis3mdl",
+        "temperature"
+      ],
+      "bib_key": "st_lis3mdl_docid024204"
+    },
+    {
+      "quote": "If TEMP_EN bit in CTRL_REG1 (20h) is set to '1', a temperature data is acquired at each conversion cycle.",
+      "source_type": "primary",
+      "location": "Table 4, note 2",
+      "tags": [
+        "lis3mdl",
+        "temperature"
+      ],
+      "bib_key": "st_lis3mdl_docid024204"
+    },
+    {
+      "quote": "The self-test capability allows the user to check the functioning of the sensor in the final application.",
+      "source_type": "primary",
+      "location": "Description",
+      "tags": [
+        "lis3mdl",
+        "self-test"
+      ],
+      "bib_key": "st_lis3mdl_docid024204"
+    },
+    {
+      "quote": "Due to the time needed for data transfer, sensor latency, and OS overhead,",
+      "source_type": "primary",
+      "location": "Introduction",
+      "tags": [
+        "timing",
+        "latency",
+        "time-offset"
+      ],
+      "bib_key": "li2014_temporal"
+    },
+    {
+      "quote": "a delay – different for each sensor – exists between the actual sampling of a measurement and its timestamp.",
+      "source_type": "primary",
+      "location": "Introduction",
+      "tags": [
+        "timing",
+        "time-offset",
+        "definition"
+      ],
+      "bib_key": "li2014_temporal"
+    },
+    {
+      "quote": "it will introduce unmodeled errors in the estimation process, and reduce its accuracy.",
+      "source_type": "primary",
+      "location": "Introduction",
+      "tags": [
+        "timing",
+        "unmodeled-delay",
+        "consequence"
+      ],
+      "bib_key": "li2014_temporal"
+    },
+    {
+      "quote": "in the case where td is varying over time (e.g., due to clock skew) they can lead to eventual failure of the estimator.",
+      "source_type": "primary",
+      "location": "Introduction",
+      "tags": [
+        "timing",
+        "clock-skew",
+        "consequence"
+      ],
+      "bib_key": "li2014_temporal"
+    },
+    {
+      "quote": "Regardless of the clock synchronization method used, it is still important to account for temporal offsets.",
+      "source_type": "primary",
+      "location": "Chapter 3",
+      "tags": [
+        "timing",
+        "time-offset",
+        "synchronization"
+      ],
+      "bib_key": "rehder2016_spatiotemporal"
+    },
+    {
+      "quote": "simultaneously determines constant temporal offsets of sensor timestamps with respect to their measurement instants.",
+      "source_type": "primary",
+      "location": "Chapter 3",
+      "tags": [
+        "timing",
+        "time-offset",
+        "identification"
+      ],
+      "bib_key": "rehder2016_spatiotemporal"
+    },
+    {
+      "quote": "temporal calibration, accurate to a fraction of the shortest measurement interval.",
+      "source_type": "primary",
+      "location": "Chapter 3, contributions",
+      "tags": [
+        "timing",
+        "identification",
+        "accuracy"
+      ],
+      "bib_key": "rehder2016_spatiotemporal"
+    },
+    {
+      "quote": "we -as ST- cannot disclose the detailed transfer functions of the internal filters",
+      "source_type": "primary",
+      "location": "ST Employee answer, May 27, 2021",
+      "tags": [
+        "lsm6dsox",
+        "filter",
+        "bandwidth",
+        "undisclosed"
+      ],
+      "bib_key": "st_community_lpf_25081"
+    },
+    {
+      "quote": "Gyroscope LPF2 bandwidth selection",
+      "source_type": "primary",
+      "location": "§6.4.2, Table 18 title",
+      "tags": [
+        "lsm6dsox",
+        "gyroscope",
+        "filter",
+        "bandwidth"
+      ],
+      "bib_key": "st_lsm6dsox_ds12814"
+    },
+    {
+      "quote": "Gyroscope ODR [Hz] LPF2 cutoff [Hz] 12.5 4.2 52 16.6 208 66.8 1667 1108.1",
+      "source_type": "primary",
+      "location": "§6.4.2, Table 18 (representative rows)",
+      "tags": [
+        "lsm6dsox",
+        "gyroscope",
+        "filter",
+        "bandwidth"
+      ],
+      "bib_key": "st_lsm6dsox_ds12814"
+    },
+    {
+      "quote": "The cutoff value of the LPF1 output is ODR/2 when the accelerometer is in high-performance mode.",
+      "source_type": "primary",
+      "location": "§6.4.1, Figure 18 note",
+      "tags": [
+        "lsm6dsox",
+        "accelerometer",
+        "filter",
+        "bandwidth"
+      ],
+      "bib_key": "st_lsm6dsox_ds12814"
+    },
+    {
+      "quote": "Splitting the Unit Delay fractional delay filter is a device for bandlimited interpolation between samples.",
+      "source_type": "primary",
+      "location": "Abstract",
+      "tags": [
+        "timing",
+        "fractional-delay"
+      ],
+      "bib_key": "laakso1996_fd"
+    },
+    {
+      "quote": "simple and efficient methods that are well suited for fast coefficient update or continuous control of the delay value.",
+      "source_type": "primary",
+      "location": "Abstract",
+      "tags": [
+        "timing",
+        "fractional-delay",
+        "time-varying-delay"
+      ],
+      "bib_key": "laakso1996_fd"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+/target
+
+AGENTS.md
+CLAUDE.md
+GEMINI.md
+
+.agent/**
+.cursor/**
+.claude/**
+.copilot/**

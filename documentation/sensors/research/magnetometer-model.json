@@ -1,0 +1,149 @@
+{
+  "slug": "magnetometer-model",
+  "idea": "Magnetometer family: soft- and hard-iron error model, supply-current interference, local field reference, ellipsoid calibration, operating modes and disturbance limits (LIS3MDL reference part)",
+  "date": "2026-10-30",
+  "prior_research_files": [
+    "sensor-model-pipeline.json",
+    "measurement-timing.json"
+  ],
+  "queries": [
+    {
+      "query": "Reference field for magnetometer calibration and simulation truth: geomagnetic model components and validity",
+      "method": "web: NOAA NCEI World Magnetic Model page",
+      "status": "resolved"
+    },
+    {
+      "query": "LIS3MDL on-chip offset registers, temperature compensation, self-test and operating-mode noise",
+      "method": "web: STMicroelectronics AN4602 (pololu.com mirror)",
+      "status": "resolved"
+    },
+    {
+      "query": "Local crustal and installation anomalies relative to the main-field model",
+      "method": "web: NOAA NCEI WMM page",
+      "status": "resolved"
+    },
+    {
+      "query": "Alignment between magnetometer and inertial axes (mag-to-IMU misalignment) identification",
+      "method": "not searched",
+      "status": "open"
+    },
+    {
+      "query": "Vasconcelos et al. 2011 geometric calibration statements",
+      "method": "carried from prior file; abstract not retrieved",
+      "status": "open"
+    },
+    {
+      "query": "LIS3MDL non-linearity model beyond the ±0.12 %FS specification",
+      "method": "not searched",
+      "status": "open"
+    }
+  ],
+  "evidence": [
+    {
+      "quote": "is the standard model for navigation, attitude, and heading referencing systems that use the geomagnetic field",
+      "source_type": "primary",
+      "location": "Overview",
+      "tags": [
+        "wmm",
+        "reference-field"
+      ],
+      "bib_key": "noaa_wmm"
+    },
+    {
+      "quote": "The WMM represents only the main geomagnetic field.",
+      "source_type": "primary",
+      "location": "Limitations",
+      "tags": [
+        "wmm",
+        "main-field",
+        "limitation"
+      ],
+      "bib_key": "noaa_wmm"
+    },
+    {
+      "quote": "The current version (WMM2025) was released on December 17, 2024, and will remain valid until late 2029.",
+      "source_type": "primary",
+      "location": "Versions",
+      "tags": [
+        "wmm",
+        "validity"
+      ],
+      "bib_key": "noaa_wmm"
+    },
+    {
+      "quote": "The error is one standard deviation difference between a hypothetical measurement and model output.",
+      "source_type": "primary",
+      "location": "Uncertainty",
+      "tags": [
+        "wmm",
+        "uncertainty"
+      ],
+      "bib_key": "noaa_wmm"
+    },
+    {
+      "quote": "Typical usage of these registers is to compensate for hard-iron effects.",
+      "source_type": "primary",
+      "location": "Offset registers",
+      "tags": [
+        "lis3mdl",
+        "hard-iron",
+        "offset"
+      ],
+      "bib_key": "st_an4602"
+    },
+    {
+      "quote": "The content of the OFFSET register is subtracted from the output of the device.",
+      "source_type": "primary",
+      "location": "Offset registers",
+      "tags": [
+        "lis3mdl",
+        "offset",
+        "raw-data"
+      ],
+      "bib_key": "st_an4602"
+    },
+    {
+      "quote": "A temperature compensation digital block is introduced to compensate for the effect of temperature.",
+      "source_type": "primary",
+      "location": "Temperature",
+      "tags": [
+        "lis3mdl",
+        "temperature",
+        "on-chip-compensation"
+      ],
+      "bib_key": "st_an4602"
+    },
+    {
+      "quote": "suitable for delta temperature measurement.",
+      "source_type": "primary",
+      "location": "Temperature sensor",
+      "tags": [
+        "lis3mdl",
+        "temperature"
+      ],
+      "bib_key": "st_an4602"
+    },
+    {
+      "quote": "The output noise is strictly related to the operating mode.",
+      "source_type": "primary",
+      "location": "Operating modes",
+      "tags": [
+        "lis3mdl",
+        "noise",
+        "operating-mode"
+      ],
+      "bib_key": "st_an4602"
+    },
+    {
+      "quote": "The noise level sets the minimum detectable field.",
+      "source_type": "primary",
+      "location": "Operating modes",
+      "tags": [
+        "lis3mdl",
+        "noise",
+        "resolution"
+      ],
+      "bib_key": "st_an4602"
+    }
+  ]
+}

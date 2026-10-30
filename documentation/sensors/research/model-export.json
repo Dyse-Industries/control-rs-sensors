@@ -1,0 +1,77 @@
+{
+  "slug": "model-export",
+  "idea": "Model export: generated no_std Rust source, parameter record, interchange formats for other simulators and estimators",
+  "date": "2026-10-30",
+  "prior_research_files": [
+    "sensor-model-pipeline.json",
+    "measurement-timing.json"
+  ],
+  "queries": [
+    {
+      "query": "Simulator noise parameterization as an export target (Gazebo SDF IMU noise elements)",
+      "method": "web: SDFormat 1.4 imu.sdf (docs.rs source)",
+      "status": "resolved"
+    },
+    {
+      "query": "Estimator noise configuration as an export target (Kalibr YAML)",
+      "method": "prior file: Kalibr wiki, allan_variance_ros",
+      "status": "resolved"
+    },
+    {
+      "query": "Calibration data carried as an attachment of a log container",
+      "method": "web: MCAP specification",
+      "status": "resolved"
+    },
+    {
+      "query": "Newer SDFormat versions: dynamic bias elements",
+      "method": "not in SDF 1.4; later versions not retrieved",
+      "status": "open"
+    }
+  ],
+  "evidence": [
+    {
+      "quote": "For type \"gaussian,\" the standard deviation of the Gaussian distribution from which noise values are drawn.",
+      "source_type": "primary",
+      "location": "imu.sdf, noise/stddev",
+      "tags": [
+        "sdf",
+        "gazebo",
+        "white-noise"
+      ],
+      "bib_key": "sdformat_imu_14"
+    },
+    {
+      "quote": "For type \"gaussian,\" the mean of the Gaussian distribution from which bias values are drawn.",
+      "source_type": "primary",
+      "location": "imu.sdf, noise/bias_mean",
+      "tags": [
+        "sdf",
+        "gazebo",
+        "bias"
+      ],
+      "bib_key": "sdformat_imu_14"
+    },
+    {
+      "quote": "For type \"gaussian,\" the standard deviation of the Gaussian distribution from which bias values are drawn.",
+      "source_type": "primary",
+      "location": "imu.sdf, noise/bias_stddev",
+      "tags": [
+        "sdf",
+        "gazebo",
+        "bias"
+      ],
+      "bib_key": "sdformat_imu_14"
+    },
+    {
+      "quote": "Attachment records contain auxiliary artifacts such as text, core dumps, calibration data, or other arbitrary data.",
+      "source_type": "primary",
+      "location": "Attachment (op=0x09)",
+      "tags": [
+        "mcap",
+        "attachment",
+        "calibration"
+      ],
+      "bib_key": "mcap_spec"
+    }
+  ]
+}
